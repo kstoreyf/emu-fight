@@ -11,36 +11,39 @@ from nbodykit import cosmology
 
 def main():
     save_fn = 'data/cosmology_train.npy'
-    x = generate_training_parameters(npoints=10)
+    x = generate_training_parameters(n_train=1000)
     y = generate_data(x)
     data = write_data(x, y)
     save_data(data, save_fn)
 
     save_fn = 'data/cosmology_test.npy'
-    x = generate_testing_parameters(ntest=100)
+    x = generate_testing_parameters(n_test=100)
     y = generate_data(x)
     data = write_data(x, y)
     save_data(data, save_fn)
 
 
 # Generate the parameters that govern the output training set data
-def generate_training_parameters(npoints=10):
-    nparams = 3
-    omegam = np.linspace(0.26, 0.34, npoints)
-    sigma8 = np.linspace(0.7, 0.95, npoints)
-    omegab = np.linspace(0.038, 0.058, npoints)
-    grid = np.meshgrid(omegam, sigma8, omegab)
-    # x has shape (nparams, ndata), where ndata = npoints**nparams
-    x = np.array([grid[p].flatten() for p in range(nparams)])
+def generate_training_parameters(n_train=1000):
+    n_params = 3
+    n_points = n_train**(1./float(n_params))
+    assert abs(round(n_points) - n_points) < 1e-12, f"n_train must be a power of {n_params}! (because we're making a high-dimensional grid" 
+    n_points = round(n_points)
+    omega_m = np.linspace(0.26, 0.34, n_points)
+    sigma_8 = np.linspace(0.7, 0.95, n_points)
+    omega_b = np.linspace(0.038, 0.058, n_points)
+    grid = np.meshgrid(omega_m, sigma_8, omega_b)
+    # x has shape (n_params, n_train), where n_train = n_points**n_params
+    x = np.array([grid[p].flatten() for p in range(n_params)])
     return x
 
 # Generate the parameters that govern the output testing set data
-def generate_testing_parameters(ntest=100):
-    omegam = random_between(0.26, 0.34, ntest)
-    sigma8 = random_between(0.7, 0.95, ntest)
-    omegab = random_between(0.038, 0.058, ntest)
-    # x has shape (nparams, ndata)
-    x = np.array([omegam, sigma8, omegab])
+def generate_testing_parameters(n_test=100):
+    omega_m = random_between(0.26, 0.34, n_test)
+    sigma_8 = random_between(0.7, 0.95, n_test)
+    omega_b = random_between(0.038, 0.058, n_test)
+    # x has shape (n_params, n_test)
+    x = np.array([omega_m, sigma_8, omega_b])
     return x
 
 
@@ -50,11 +53,11 @@ def random_between(xmin, xmax, n):
 # Generate the output data that we're interested in emulating
 def generate_data(x):
     redshift = 0.0
-    rvals = np.linspace(50, 140, 10)
+    r_vals = np.linspace(50, 140, 10)
 
-    ndata = x.shape[1]
-    y = np.empty((len(rvals), ndata))
-    for i in range(ndata):
+    n_data = x.shape[1]
+    y = np.empty((len(r_vals), n_data))
+    for i in range(n_data):
         print(i)
         om, s8, ob = x[:,i]
         ocdm = om - ob
@@ -63,7 +66,7 @@ def generate_data(x):
         cosmo = cosmo.match(sigma8=s8)
         Plin = cosmology.LinearPower(cosmo, redshift, transfer='EisensteinHu')
         CF = cosmology.correlation.CorrelationFunction(Plin)
-        y[:,i] = CF(rvals)
+        y[:,i] = CF(r_vals)
     return y
 
 
@@ -71,9 +74,9 @@ def generate_data(x):
 # (because numpy likes to save arrays, not dictionaries)
 def write_data(x, y):
     data = []
-    ndata = x.shape[1]
-    for i in range(ndata):
-        data.append({'x': x[:,i], 'y': y[:,i], 'label':i})
+    n_data = x.shape[1]
+    for i in range(n_data):
+        data.append({'x': x[:,i], 'y': y[:,i], 'id':i})
     return np.array(data)
 
 

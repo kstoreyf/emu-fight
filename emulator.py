@@ -9,6 +9,7 @@ Created on Tue Sep  1 17:53:26 2020
 import numpy as np
 import os
 import sklearn
+import pickle
 from sklearn.neural_network import MLPRegressor
 from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
@@ -27,9 +28,16 @@ class emulator:
         self.number_of_samples = [] # can add any other quantities of interest here
         self.val_loss = []
         
-    def read_data_from_folder(self):
-        # TODO: Use np.loadtxt so that we can append to self.x and self.y for training --> will depend on formatting of input
-        pass
+    def read_data(self, file):
+        infile = open(file,'rb')
+        new_dict = pickle.load(infile)
+        infile.close()
+        
+        for n, i in enumerate(new_dict["input_data"]):
+            self.x.append(new_dict["input_data"].values[n][1:])
+            
+        for data in new_dict["output_data"]:
+            self.x.append(new_dict["input_data"].values[n][1:])
                 
     def train_random_forest_regressor(self, scale = False, n_estimators = 100):
         if scale:

@@ -13,8 +13,8 @@ from nbodykit import cosmology
 
 
 def main():
-    save_fn = '../data/cosmology_train_small.pickle'
-    x = generate_training_parameters(n_train=64)
+    save_fn = '../data/cosmology_train.pickle'
+    x = generate_training_parameters(n_train=1000)
     y, extra_input = generate_data(x)
     input_data, output_data = format_data(x, y, 
                                           objs_id=None)
@@ -22,8 +22,8 @@ def main():
                                      extra_input)
     save_data(data_to_save, save_fn)
 
-    save_fn = '../data/cosmology_test_small.pickle'
-    x = generate_testing_parameters(n_test=10)
+    save_fn = '../data/cosmology_test.pickle'
+    x = generate_testing_parameters(n_test=100)
     y, extra_input = generate_data(x)
     input_data, output_data = format_data(x, y, 
                                           objs_id=None)

@@ -37,8 +37,8 @@ class emulator:
             self.x.append(new_dict["input_data"].values[n][1:])
             
         for data in new_dict["output_data"]:
-            self.x.append(new_dict["input_data"].values[n][1:])
-                
+            self.y.append(new_dict["output_data"].values[n][1:])
+                            
     def train_random_forest_regressor(self, scale = False, n_estimators = 100):
         if scale:
             self.scaler = StandardScaler()

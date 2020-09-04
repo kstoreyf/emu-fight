@@ -25,7 +25,7 @@ from matplotlib import pylab
 import matplotlib
 matplotlib.rcParams['figure.dpi'] = 80
 params = {'legend.fontsize': 'large',
-          'figure.figsize': (5, 4),
+          'figure.figsize': (7, 5),
          'axes.labelsize': 'x-large',
          'axes.titlesize': 'x-large',
          'xtick.labelsize': 'large',
@@ -110,14 +110,16 @@ class emulator:
     
 
     # currently assumes model has a score method that takes x and y test values
-    def test(self, regressor_name):
+    def test(self, regressor_name, metric):
         assert regressor_name in self.models, f"{regressor_name} not yet trained!"
+        metric_funcs = {"r2": sklearn.metrics.r2_score,
+                             "mse": sklearn.metrics.mean_squared_error}
+        assert metric in metric_funcs, f"{metric} not recognized! options are: {metric_funcs.keys()}"
         scores = np.empty(self.n_values)
         for j in range(self.n_values):
-            ys_test_r = self.ys_test[:,j]
-            model = self.models[regressor_name]['regressors'][j]
-            scores[j] = model.score(self.xs_test, ys_test_r)
-        self.models[regressor_name]['scores'] = scores
+            ys_predict = self.models[regressor_name]['ys_predict']
+            scores[j] = metric_funcs[metric](self.ys_test_orig[:,j], ys_predict[:,j])
+        self.models[regressor_name][metric] = scores
 
 
     # assumes model has a predict method that takes x values
@@ -187,15 +189,14 @@ class emulator:
     
 
  
-    def plot_predictions(self, regressor_name):   
+    def plot_predictions(self, regressor_name, frac=0.2):   
                 
-        n_plot = int(0.2*self.number_test)
+        n_plot = int(frac*self.number_test)
         np.random.seed(42)
         idxs = np.random.choice(np.arange(self.number_test), n_plot)
         color_idx = np.linspace(0, 1, n_plot)
         colors = np.array([plt.cm.rainbow(c) for c in color_idx])
         
-        plt.figure(figsize=(8,6))
         for i in range(n_plot):
             ys_test_plot = self.ys_test_orig[idxs,:][i]
             ys_predict_plot = self.models[regressor_name]['ys_predict'][idxs,:][i]
@@ -213,11 +214,23 @@ class emulator:
 
 
     def plot_training(self):
-        plt.figure(figsize=(8,6))
         plt.plot(self.r_vals, self.ys_train_orig.T, alpha=0.8, lw=0.5)
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
         
+
+    def plot_accuracy(self, metric, regressor_names=None):
+        if regressor_names is None:
+            regressor_names = self.models.keys()
+        plt.figure()
+        for rn in regressor_names:
+            assert metric in self.models[rn].keys(), f"must first run emu.test(regressor_name, metric) for regressor_name {rn} and metric {metric}!"
+            scores = self.models[rn][metric]
+            plt.plot(self.r_vals, scores, label=rn)
+        plt.xlabel('$r$')
+        plt.ylabel(metric)
+        plt.legend()
+
 
 # sample use
 #x = emulator()

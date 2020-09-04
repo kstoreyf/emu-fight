@@ -38,8 +38,8 @@ class emulator:
 
         self.xs_train = np.array(input_train.drop(columns=['object_id']))
         self.ys_train = np.array(output_train.drop(columns=['object_id']))
-        x.extra_train = new_dict_train['extra_input']
-        x.r_vals = x.extra_train['r_vals']
+        self.extra_train = new_dict_train['extra_input']
+        self.r_vals = self.extra_train['r_vals']
         
         infile_test = open(test_file,'rb')
         new_dict_test = pickle.load(infile_test)
@@ -103,30 +103,31 @@ class emulator:
         self.history=self.model.fit(np.asarray(self.x), np.asarray(self.y), epochs=30, batch_size=150,  verbose=1, validation_split=0.2)
         self.val_loss_list.append(self.history.history['loss'])
         self.number_of_samples.append(len(self.x))
-        
+    
+ 
     def plot_data(self, regressor):
-        regrs = np.empty(x.n_values, dtype=object)
-        for j in range(x.n_values):
-            ys_train_r = x.ys_train[:,j]
-            ys_test_r = x.ys_test[:,j]
+        regrs = np.empty(self.n_values, dtype=object)
+        for j in range(self.n_values):
+            ys_train_r = self.ys_train[:,j]
+            ys_test_r = self.ys_test[:,j]
             if regressor == "RF":
-                x.train_random_forest_regressor(x = x.xs_train, y = ys_train_r.ravel())
-                x.model_rf.score(x.xs_test, ys_test_r)
-            regrs[j] = x.model_rf        
+                self.train_random_forest_regressor(x = self.xs_train, y = ys_train_r.ravel())
+                self.model_rf.score(self.xs_test, ys_test_r)
+            regrs[j] = self.model_rf        
                 
-        ys_predict = np.zeros((x.number_test, x.n_values))
-        for j in range(x.n_values):  
-            ys_predict_r = regrs[j].predict(x.xs_test)
+        ys_predict = np.zeros((self.number_test, self.n_values))
+        for j in range(self.n_values):  
+            ys_predict_r = regrs[j].predict(self.xs_test)
             ys_predict[:,j] = ys_predict_r
             
-        n_plot = int(0.2*x.number_test)
-        idxs = np.random.choice(np.arange(x.number_test), n_plot)
+        n_plot = int(0.2*self.number_test)
+        idxs = np.random.choice(np.arange(self.number_test), n_plot)
         color_idx = np.linspace(0, 1, n_plot)
         colors = np.array([plt.cm.rainbow(c) for c in color_idx])
         
         plt.figure(figsize=(8,6))
         for i in range(n_plot):
-            ys_test_plot = x.ys_test[idxs,:][i]
+            ys_test_plot = self.ys_test[idxs,:][i]
             ys_predict_plot = ys_predict[idxs][i]
             if i==0:
                 label_test = 'truth'
@@ -134,15 +135,15 @@ class emulator:
             else:
                 label_test = None
                 label_predict = None
-            plt.plot(x.r_vals[:x.n_values], ys_test_plot, alpha=0.8, label=label_test, marker='o', markerfacecolor='None', ls='None', color=colors[i])
-            plt.plot(x.r_vals[:x.n_values], ys_predict_plot, alpha=0.8, label=label_predict, color=colors[i])
+            plt.plot(self.r_vals[:self.n_values], ys_test_plot, alpha=0.8, label=label_test, marker='o', markerfacecolor='None', ls='None', color=colors[i])
+            plt.plot(self.r_vals[:self.n_values], ys_predict_plot, alpha=0.8, label=label_predict, color=colors[i])
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
         plt.legend()
         
         
 # sample use
-x = emulator()
-x.read_data("/Users/johannesheyl/Downloads/cosmology_train_big.pickle", "/Users/johannesheyl/Downloads/cosmology_test.pickle")
-x.plot_data(regressor="RF")
+#x = emulator()
+#x.read_data("/Users/johannesheyl/Downloads/cosmology_train_big.pickle", "/Users/johannesheyl/Downloads/cosmology_test.pickle")
+#x.plot_data(regressor="RF")
 

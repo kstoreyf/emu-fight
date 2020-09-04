@@ -190,6 +190,7 @@ class emulator:
     def plot_predictions(self, regressor_name):   
                 
         n_plot = int(0.2*self.number_test)
+        np.random.seed(42)
         idxs = np.random.choice(np.arange(self.number_test), n_plot)
         color_idx = np.linspace(0, 1, n_plot)
         colors = np.array([plt.cm.rainbow(c) for c in color_idx])

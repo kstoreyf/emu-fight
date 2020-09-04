@@ -32,6 +32,7 @@ params = {'legend.fontsize': 'large',
          'ytick.labelsize': 'large'}
 pylab.rcParams.update(params)
 
+
 class emulator:
     def __init__(self):        
         self.x = []
@@ -40,7 +41,11 @@ class emulator:
         self.val_loss = []
         self.models = defaultdict(dict)
         
-    def read_data(self, training_file, test_file):
+
+    def read_data(self, training_file, test_file, scale=False, normalize_y=False):
+        self.scale = scale
+        self.normalize_y = normalize_y
+
         infile_train = open(training_file,'rb')
         new_dict_train = pickle.load(infile_train)
         infile_train.close()
@@ -48,10 +53,23 @@ class emulator:
         input_train = new_dict_train['input_data']
         output_train = new_dict_train['output_data']
 
-        self.xs_train = np.array(input_train.drop(columns=['object_id']))
-        self.ys_train = np.array(output_train.drop(columns=['object_id']))
+        self.xs_train_orig = np.array(input_train.drop(columns=['object_id']))
+        self.ys_train_orig = np.array(output_train.drop(columns=['object_id']))
         self.extra_train = new_dict_train['extra_input']
         self.r_vals = self.extra_train['r_vals']
+
+        if scale:
+            self.scaler = StandardScaler()
+            self.scaler.fit(self.xs_train_orig)
+            self.xs_train = self.scaler.transform(self.xs_train_orig)
+        else:
+            self.xs_train = self.xs_train_orig
+
+        if normalize_y:
+            self.y_mean = np.mean(self.ys_train_orig, axis=0)
+            self.ys_train = self.ys_train_orig/self.y_mean
+        else:
+            self.ys_train = self.ys_train_orig
         
         infile_test = open(test_file,'rb')
         new_dict_test = pickle.load(infile_test)
@@ -60,23 +78,34 @@ class emulator:
         input_test = new_dict_test['input_data']
         output_test = new_dict_test['output_data']
 
-        self.xs_test = np.array(input_test.drop(columns=['object_id']))
-        self.ys_test = np.array(output_test.drop(columns=['object_id']))    
-        
+        self.xs_test_orig = np.array(input_test.drop(columns=['object_id']))
+        self.ys_test_orig = np.array(output_test.drop(columns=['object_id']))    
+        if scale:
+            self.xs_test = self.scaler.transform(self.xs_test_orig)
+        else:
+            self.xs_test = self.xs_test_orig
+
+        if normalize_y:
+            self.ys_test = self.ys_test_orig/self.y_mean
+        else:
+            self.ys_test = self.ys_test_orig
+
         self.n_params = input_train.shape[1]-1
         self.n_values = output_train.shape[1]-1
         self.number_test = input_test.shape[0]
 
 
-    def train(self, regressor_name, **kwargs):
+    def train(self, regressor_name, scale=True, **kwargs):
         self.models[regressor_name]['regressors'] = np.empty(self.n_values, dtype=object)
         train_func = None
         if regressor_name == "RF":
             train_func = self.train_random_forest_regressor
+        if regressor_name == "ANN":
+            train_func = self.train_ann_regressor
 
         for j in range(self.n_values):
             ys_train_r = self.ys_train[:,j]
-            model = train_func(x = self.xs_train, y = ys_train_r.ravel(), **kwargs)
+            model = train_func(x=self.xs_train, y=ys_train_r.ravel(), **kwargs)
             self.models[regressor_name]['regressors'][j] = model
     
 
@@ -97,14 +126,20 @@ class emulator:
         for j in range(self.n_values):
             model = self.models[regressor_name]['regressors'][j]
             ys_predict[:,j] = model.predict(self.xs_test)
+        if self.normalize_y:
+            ys_predict = ys_predict*self.y_mean
         self.models[regressor_name]['ys_predict'] = ys_predict
+
+
+    def train_ann_regressor(self, x, y):
+        model = MLPRegressor(hidden_layer_sizes=(14, ), alpha=0.00028, activation='relu',
+                        random_state=1, max_iter=10000, solver='lbfgs', tol=1e-6
+                       ).fit(x, y)
+        return model
 
 
     def train_random_forest_regressor(self, x, y, scale = False):
         if scale:
-            self.scaler = StandardScaler()
-            self.scaler.fit(x)
-            self.x_scaled = self.scaler.transform(x)
             X_train, X_test, y_train, y_test = train_test_split(self.x_scaled, y)
         else:
             X_train, X_test, y_train, y_test = train_test_split(x, y)
@@ -161,7 +196,7 @@ class emulator:
         
         plt.figure(figsize=(8,6))
         for i in range(n_plot):
-            ys_test_plot = self.ys_test[idxs,:][i]
+            ys_test_plot = self.ys_test_orig[idxs,:][i]
             ys_predict_plot = self.models[regressor_name]['ys_predict'][idxs,:][i]
             if i==0:
                 label_test = 'truth'
@@ -178,7 +213,7 @@ class emulator:
 
     def plot_training(self):
         plt.figure(figsize=(8,6))
-        plt.plot(self.r_vals, self.ys_train.T, alpha=0.8, lw=0.5)
+        plt.plot(self.r_vals, self.ys_train_orig.T, alpha=0.8, lw=0.5)
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
         

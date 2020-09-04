@@ -8,6 +8,7 @@ Created on Tue Sep  1 17:53:26 2020
 
 import numpy as np
 import os
+from collections import defaultdict
 import sklearn
 import pickle
 from sklearn.neural_network import MLPRegressor
@@ -20,6 +21,16 @@ import tensorflow as tf
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
 import matplotlib.pyplot as plt
+from matplotlib import pylab
+import matplotlib
+matplotlib.rcParams['figure.dpi'] = 80
+params = {'legend.fontsize': 'large',
+          'figure.figsize': (5, 4),
+         'axes.labelsize': 'x-large',
+         'axes.titlesize': 'x-large',
+         'xtick.labelsize': 'large',
+         'ytick.labelsize': 'large'}
+pylab.rcParams.update(params)
 
 class emulator:
     def __init__(self):        
@@ -27,6 +38,7 @@ class emulator:
         self.y = []
         self.number_of_samples = [] # can add any other quantities of interest here
         self.val_loss = []
+        self.models = defaultdict(dict)
         
     def read_data(self, training_file, test_file):
         infile_train = open(training_file,'rb')
@@ -56,7 +68,38 @@ class emulator:
         self.number_test = input_test.shape[0]
 
 
-                            
+    def train(self, regressor_name, **kwargs):
+        self.models[regressor_name]['regressors'] = np.empty(self.n_values, dtype=object)
+        train_func = None
+        if regressor_name == "RF":
+            train_func = self.train_random_forest_regressor
+
+        for j in range(self.n_values):
+            ys_train_r = self.ys_train[:,j]
+            model = train_func(x = self.xs_train, y = ys_train_r.ravel(), **kwargs)
+            self.models[regressor_name]['regressors'][j] = model
+    
+
+    # currently assumes model has a score method that takes x and y test values
+    def test(self, regressor_name):
+        assert regressor_name in self.models, f"{regressor_name} not yet trained!"
+        scores = np.empty(self.n_values)
+        for j in range(self.n_values):
+            ys_test_r = self.ys_test[:,j]
+            model = self.models[regressor_name]['regressors'][j]
+            scores[j] = model.score(self.xs_test, ys_test_r)
+        self.models[regressor_name]['scores'] = scores
+
+
+    # assumes model has a predict method that takes x values
+    def predict_test_set(self, regressor_name):
+        ys_predict = np.zeros((self.number_test, self.n_values))
+        for j in range(self.n_values):
+            model = self.models[regressor_name]['regressors'][j]
+            ys_predict[:,j] = model.predict(self.xs_test)
+        self.models[regressor_name]['ys_predict'] = ys_predict
+
+
     def train_random_forest_regressor(self, x, y, scale = False):
         if scale:
             self.scaler = StandardScaler()
@@ -65,10 +108,12 @@ class emulator:
             X_train, X_test, y_train, y_test = train_test_split(self.x_scaled, y)
         else:
             X_train, X_test, y_train, y_test = train_test_split(x, y)
-        self.model_rf = RandomForestRegressor(verbose = 0, n_jobs=-1, n_estimators=100) #n_jobs=-1 parallelises the training
-        self.model_rf.fit(X_train, y_train)
-        y_pred = self.model_rf.predict(X_test)
-        
+        model = RandomForestRegressor(verbose = 0, n_jobs=-1, n_estimators=100) #n_jobs=-1 parallelises the training
+        model.fit(X_train, y_train)
+        #y_pred = self.model_rf.predict(X_test)
+        return model
+ 
+
     def train_nn_regressor(self, scale = True, architecture = (512,256,128), activation_func = "tanh"):
         if scale:
             self.scaler = StandardScaler()
@@ -85,6 +130,7 @@ class emulator:
         print("Validation Loss: " + str(self.model_nn.loss_))
         self.number_of_samples.append(len(self.x))
     
+
     def train_nn_regressor_tf(self, scale = True, architecture = (512,256,128), ndim = 7):
         if scale:
             self.scaler = StandardScaler()
@@ -104,22 +150,10 @@ class emulator:
         self.val_loss_list.append(self.history.history['loss'])
         self.number_of_samples.append(len(self.x))
     
+
  
-    def plot_data(self, regressor):
-        regrs = np.empty(self.n_values, dtype=object)
-        for j in range(self.n_values):
-            ys_train_r = self.ys_train[:,j]
-            ys_test_r = self.ys_test[:,j]
-            if regressor == "RF":
-                self.train_random_forest_regressor(x = self.xs_train, y = ys_train_r.ravel())
-                self.model_rf.score(self.xs_test, ys_test_r)
-            regrs[j] = self.model_rf        
+    def plot_predictions(self, regressor_name):   
                 
-        ys_predict = np.zeros((self.number_test, self.n_values))
-        for j in range(self.n_values):  
-            ys_predict_r = regrs[j].predict(self.xs_test)
-            ys_predict[:,j] = ys_predict_r
-            
         n_plot = int(0.2*self.number_test)
         idxs = np.random.choice(np.arange(self.number_test), n_plot)
         color_idx = np.linspace(0, 1, n_plot)
@@ -128,7 +162,7 @@ class emulator:
         plt.figure(figsize=(8,6))
         for i in range(n_plot):
             ys_test_plot = self.ys_test[idxs,:][i]
-            ys_predict_plot = ys_predict[idxs][i]
+            ys_predict_plot = self.models[regressor_name]['ys_predict'][idxs,:][i]
             if i==0:
                 label_test = 'truth'
                 label_predict = 'emu_prediction'
@@ -140,8 +174,15 @@ class emulator:
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
         plt.legend()
+
+
+    def plot_training(self):
+        plt.figure(figsize=(8,6))
+        plt.plot(self.r_vals, self.ys_train.T, alpha=0.8, lw=0.5)
+        plt.xlabel('$r$')
+        plt.ylabel(r'$\xi(r)$')
         
-        
+
 # sample use
 #x = emulator()
 #x.read_data("/Users/johannesheyl/Downloads/cosmology_train_big.pickle", "/Users/johannesheyl/Downloads/cosmology_test.pickle")

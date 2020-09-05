@@ -6,23 +6,26 @@ Created on Tue Sep  1 17:53:26 2020
 @author: johannesheyl
 """
 
-import numpy as np
 import os
-from collections import defaultdict
-import sklearn
+
+import matplotlib
+import numpy as np
 import pickle
-from sklearn.neural_network import MLPRegressor
+import sklearn
+import tensorflow as tf
+
+from collections import defaultdict
+from matplotlib import pylab
+import matplotlib.pyplot as plt
 from sklearn import preprocessing
-from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-import tensorflow as tf
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
-import matplotlib.pyplot as plt
-from matplotlib import pylab
-import matplotlib
+
 matplotlib.rcParams['figure.dpi'] = 80
 params = {'legend.fontsize': 'large',
           'figure.figsize': (7, 5),
@@ -34,13 +37,13 @@ pylab.rcParams.update(params)
 
 
 class emulator:
-    def __init__(self):        
+    def __init__(self):
         self.x = []
         self.y = []
         self.number_of_samples = [] # can add any other quantities of interest here
         self.val_loss = []
         self.models = defaultdict(dict)
-        
+
 
     def read_data(self, training_file, test_file, scale=False, normalize_y=False):
         self.scale = scale
@@ -49,7 +52,7 @@ class emulator:
         infile_train = open(training_file,'rb')
         new_dict_train = pickle.load(infile_train)
         infile_train.close()
-        
+
         input_train = new_dict_train['input_data']
         output_train = new_dict_train['output_data']
 
@@ -70,16 +73,16 @@ class emulator:
             self.ys_train = self.ys_train_orig/self.y_mean
         else:
             self.ys_train = self.ys_train_orig
-        
+
         infile_test = open(test_file,'rb')
         new_dict_test = pickle.load(infile_test)
         infile_test.close()
-        
+
         input_test = new_dict_test['input_data']
         output_test = new_dict_test['output_data']
 
         self.xs_test_orig = np.array(input_test.drop(columns=['object_id']))
-        self.ys_test_orig = np.array(output_test.drop(columns=['object_id']))    
+        self.ys_test_orig = np.array(output_test.drop(columns=['object_id']))
         if scale:
             self.xs_test = self.scaler.transform(self.xs_test_orig)
         else:
@@ -107,7 +110,7 @@ class emulator:
             ys_train_r = self.ys_train[:,j]
             model = train_func(x=self.xs_train, y=ys_train_r.ravel(), **kwargs)
             self.models[regressor_name]['regressors'][j] = model
-    
+
 
     # currently assumes model has a score method that takes x and y test values
     def test(self, regressor_name, metric):
@@ -149,7 +152,7 @@ class emulator:
         model.fit(X_train, y_train)
         #y_pred = self.model_rf.predict(X_test)
         return model
- 
+
 
     def train_nn_regressor(self, scale = True, architecture = (512,256,128), activation_func = "tanh"):
         if scale:
@@ -166,7 +169,7 @@ class emulator:
         self.val_loss_list.append(val_loss)
         print("Validation Loss: " + str(self.model_nn.loss_))
         self.number_of_samples.append(len(self.x))
-    
+
 
     def train_nn_regressor_tf(self, scale = True, architecture = (512,256,128), ndim = 7):
         if scale:
@@ -186,17 +189,17 @@ class emulator:
         self.history=self.model.fit(np.asarray(self.x), np.asarray(self.y), epochs=30, batch_size=150,  verbose=1, validation_split=0.2)
         self.val_loss_list.append(self.history.history['loss'])
         self.number_of_samples.append(len(self.x))
-    
 
- 
-    def plot_predictions(self, regressor_name, frac=0.2):   
-                
+
+
+    def plot_predictions(self, regressor_name, frac=0.2):
+
         n_plot = int(frac*self.number_test)
         np.random.seed(42)
         idxs = np.random.choice(np.arange(self.number_test), n_plot)
         color_idx = np.linspace(0, 1, n_plot)
         colors = np.array([plt.cm.rainbow(c) for c in color_idx])
-        
+
         for i in range(n_plot):
             ys_test_plot = self.ys_test_orig[idxs,:][i]
             ys_predict_plot = self.models[regressor_name]['ys_predict'][idxs,:][i]
@@ -217,7 +220,7 @@ class emulator:
         plt.plot(self.r_vals, self.ys_train_orig.T, alpha=0.8, lw=0.5)
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
-        
+
 
     def plot_accuracy(self, metric, regressor_names=None):
         if regressor_names is None:

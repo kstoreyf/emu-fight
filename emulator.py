@@ -29,10 +29,10 @@ from tensorflow.python.keras.layers import Dense
 matplotlib.rcParams['figure.dpi'] = 80
 params = {'legend.fontsize': 'large',
           'figure.figsize': (7, 5),
-         'axes.labelsize': 'x-large',
-         'axes.titlesize': 'x-large',
-         'xtick.labelsize': 'large',
-         'ytick.labelsize': 'large'}
+          'axes.labelsize': 'x-large',
+          'axes.titlesize': 'x-large',
+          'xtick.labelsize': 'large',
+          'ytick.labelsize': 'large'}
 pylab.rcParams.update(params)
 
 
@@ -250,6 +250,7 @@ class emulator:
 # sample use
 '''
 x = emulator()
-x.read_data("/Users/johannesheyl/Downloads/cosmology_train_big.pickle", "/Users/johannesheyl/Downloads/cosmology_test.pickle")
+x.read_data("/Users/johannesheyl/Downloads/cosmology_train_big.pickle",
+            "/Users/johannesheyl/Downloads/cosmology_test.pickle")
 x.plot_data(regressor="RF")
 '''

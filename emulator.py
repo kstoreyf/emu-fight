@@ -5,9 +5,6 @@ Created on Tue Sep  1 17:53:26 2020
 
 @author: johannesheyl
 """
-
-import os
-
 import matplotlib
 import numpy as np
 import pickle
@@ -17,10 +14,7 @@ import tensorflow as tf
 from collections import defaultdict
 from matplotlib import pylab
 import matplotlib.pyplot as plt
-from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from tensorflow.python.keras.models import Sequential
@@ -137,26 +131,30 @@ class emulator:
             ys_predict = ys_predict*self.y_mean
         self.models[regressor_name]['ys_predict'] = ys_predict
 
-    def train_ann_regressor(self, x, y, hidden_layer_sizes=(14,), alpha=0.00028,
-                            activation='relu', solver='lbfgs', tol=1e-6, 
-                            learning_rate_init=None, beta_1=0.9,  beta_2=0.985):
-        model = MLPRegressor(hidden_layer_sizes=hidden_layer_sizes, alpha=alpha,
-                             activation=activation, random_state=1, max_iter=10000,
-                             solver=solver, tol=tol, learning_rate_init=learning_rate_init,
+    def train_ann_regressor(self, x, y, hidden_layer_sizes=(14,),
+                            alpha=0.00028, activation='relu', solver='lbfgs',
+                            tol=1e-6, learning_rate_init=None, beta_1=0.9,
+                            beta_2=0.985):
+        model = MLPRegressor(hidden_layer_sizes=hidden_layer_sizes,
+                             alpha=alpha, activation=activation,
+                             random_state=1, max_iter=10000, solver=solver,
+                             tol=tol, learning_rate_init=learning_rate_init,
                              beta_1=beta_1, beta_2=beta_2).fit(x, y)
         return model
 
-    def train_random_forest_regressor(self, x, y, n_estimators=100, n_jobs=None):
+    def train_random_forest_regressor(self, x, y, n_estimators=100,
+                                      n_jobs=None):
         # n_jobs=-1 parallelises the training
         model = RandomForestRegressor(n_estimators=n_estimators, n_jobs=n_jobs)
         model.fit(x, y)
         return model
 
-    def train_nn_regressor_tf(self, x, y., architecture=(512, 256, 128), ndim=7):
+    def train_nn_regressor_tf(self, x, y, architecture=(512, 256, 128),
+                              ndim=7):
         model = Sequential()
         model.add(Dense(architecture[0], input_dim=ndim,
-                       kernel_initializer='normal',
-                       activation=tf.nn.leaky_relu))
+                  kernel_initializer='normal',
+                  activation=tf.nn.leaky_relu))
         for i in architecture[1:]:
             model.add(Dense(i, activation=tf.nn.leaky_relu))
         model.add(Dense(1, activation='linear'))
@@ -164,9 +162,9 @@ class emulator:
                            metrics=['mse', 'mae'])
         model.summary()
         history = model.fit(np.asarray(x), np.asarray(y),
-                                      epochs=30, batch_size=150,  verbose=1,
-                                      validation_split=0.2)
-        self.val_loss_list.append(self.history.history['loss'])
+                            epochs=30, batch_size=150,  verbose=1,
+                            validation_split=0.2)
+        self.val_loss_list.append(history.history['loss'])
         self.number_of_samples.append(len(self.x))
         return model
 
@@ -179,7 +177,8 @@ class emulator:
 
         for i in range(n_plot):
             ys_test_plot = self.ys_test_orig[idxs, :][i]
-            ys_predict_plot = self.models[regressor_name]['ys_predict'][idxs, :][i]
+            model = self.models[regressor_name]
+            ys_predict_plot = model['ys_predict'][idxs, :][i]
             if i == 0:
                 label_test = 'truth'
                 label_predict = 'emu_prediction'

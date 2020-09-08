@@ -27,12 +27,12 @@ from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
 
 matplotlib.rcParams['figure.dpi'] = 80
-params = {'legend.fontsize': 'large',
-          'figure.figsize': (7, 5),
+params = {'figure.figsize': (7, 5),
           'axes.labelsize': 'x-large',
           'axes.titlesize': 'x-large',
           'xtick.labelsize': 'large',
-          'ytick.labelsize': 'large'}
+          'ytick.labelsize': 'large',
+          'legend.fontsize': 'large'}
 pylab.rcParams.update(params)
 
 
@@ -112,7 +112,6 @@ class emulator:
             model = train_func(x=self.xs_train, y=ys_train_r.ravel(), **kwargs)
             self.models[regressor_name]['regressors'][j] = model
 
-    # currently assumes model has a score method that takes x and y test values
     def test(self, regressor_name, metric):
         error_message = f"{regressor_name} not yet trained!"
         assert regressor_name in self.models, error_message
@@ -218,10 +217,10 @@ class emulator:
             else:
                 label_test = None
                 label_predict = None
-            plt.plot(self.r_vals[:self.n_values], ys_test_plot, alpha=0.8,
+            plt.plot(self.r_vals, ys_test_plot, alpha=0.8,
                      label=label_test, marker='o', markerfacecolor='None',
                      ls='None', color=colors[i])
-            plt.plot(self.r_vals[:self.n_values], ys_predict_plot, alpha=0.8,
+            plt.plot(self.r_vals, ys_predict_plot, alpha=0.8,
                      label=label_predict, color=colors[i])
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')

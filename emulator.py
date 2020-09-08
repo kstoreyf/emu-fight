@@ -98,7 +98,7 @@ class emulator:
         self.n_values = output_train.shape[1]-1
         self.number_test = input_test.shape[0]
 
-    def train(self, regressor_name, scale=True, **kwargs):
+    def train(self, regressor_name, **kwargs):
         self.models[regressor_name]['regressors'] = np.empty(self.n_values,
                                                              dtype=object)
         train_func = None
@@ -137,69 +137,38 @@ class emulator:
             ys_predict = ys_predict*self.y_mean
         self.models[regressor_name]['ys_predict'] = ys_predict
 
-    def train_ann_regressor(self, x, y):
-        model = MLPRegressor(hidden_layer_sizes=(14,), alpha=0.00028,
-                             activation='relu', random_state=1, max_iter=10000,
-                             solver='lbfgs', tol=1e-6).fit(x, y)
+    def train_ann_regressor(self, x, y, hidden_layer_sizes=(14,), alpha=0.00028,
+                            activation='relu', solver='lbfgs', tol=1e-6, 
+                            learning_rate_init=None, beta_1=0.9,  beta_2=0.985):
+        model = MLPRegressor(hidden_layer_sizes=hidden_layer_sizes, alpha=alpha,
+                             activation=activation, random_state=1, max_iter=10000,
+                             solver=solver, tol=tol, learning_rate_init=learning_rate_init,
+                             beta_1=beta_1, beta_2=beta_2).fit(x, y)
         return model
 
-    def train_random_forest_regressor(self, x, y, scale=False):
-        if scale:
-            X_train, X_test, y_train, y_test = train_test_split(self.x_scaled,
-                                                                y)
-        else:
-            X_train, X_test, y_train, y_test = train_test_split(x, y)
+    def train_random_forest_regressor(self, x, y, n_estimators=100, n_jobs=None):
         # n_jobs=-1 parallelises the training
-        model = RandomForestRegressor(verbose=0, n_jobs=-1, n_estimators=100)
-        model.fit(X_train, y_train)
-        # y_pred = self.model_rf.predict(X_test)
+        model = RandomForestRegressor(n_estimators=n_estimators, n_jobs=n_jobs)
+        model.fit(x, y)
         return model
 
-    def train_nn_regressor(self, scale=True, architecture=(512, 256, 128),
-                           activation_func="tanh"):
-        if scale:
-            self.scaler = StandardScaler()
-            self.scaler.fit(self.x)
-            self.x_scaled = self.scaler.transform(self.x)
-            X_train, X_test, y_train, y_test = train_test_split(self.x_scaled,
-                                                                self.y)
-        else:
-            X_train, X_test, y_train, y_test = train_test_split(self.x, self.y)
-        self.model_nn = MLPRegressor(hidden_layer_sizes=architecture,
-                                     activation=activation_func, verbose=True,
-                                     early_stopping=True)
-        self.model_nn.fit(X_train, y_train)
-        y_pred = self.model_nn.predict(X_test)
-        val_loss = mean_squared_error(y_test, y_pred)
-        self.val_loss_list.append(val_loss)
-        print("Validation Loss: " + str(self.model_nn.loss_))
-        self.number_of_samples.append(len(self.x))
-
-    def train_nn_regressor_tf(self, scale=True, architecture=(512, 256, 128),
-                              ndim=7):
-        if scale:
-            self.scaler = StandardScaler()
-            self.scaler.fit(self.x)
-            self.x_scaled = self.scaler.transform(self.x)
-            X_train, X_test, y_train, y_test = train_test_split(self.x_scaled,
-                                                                self.y)
-        else:
-            X_train, X_test, y_train, y_test = train_test_split(self.x, self.y)
-        self.model = Sequential()
-        self.model.add(Dense(architecture[0], input_dim=ndim,
+    def train_nn_regressor_tf(self, x, y., architecture=(512, 256, 128), ndim=7):
+        model = Sequential()
+        model.add(Dense(architecture[0], input_dim=ndim,
                        kernel_initializer='normal',
                        activation=tf.nn.leaky_relu))
         for i in architecture[1:]:
-            self.model.add(Dense(i, activation=tf.nn.leaky_relu))
-        self.model.add(Dense(1, activation='linear'))
-        self.model.compile(loss='mse', optimizer='adam',
+            model.add(Dense(i, activation=tf.nn.leaky_relu))
+        model.add(Dense(1, activation='linear'))
+        model.compile(loss='mse', optimizer='adam',
                            metrics=['mse', 'mae'])
-        self.model.summary()
-        self.history = self.model.fit(np.asarray(self.x), np.asarray(self.y),
+        model.summary()
+        history = model.fit(np.asarray(x), np.asarray(y),
                                       epochs=30, batch_size=150,  verbose=1,
                                       validation_split=0.2)
         self.val_loss_list.append(self.history.history['loss'])
         self.number_of_samples.append(len(self.x))
+        return model
 
     def plot_predictions(self, regressor_name, frac=0.2):
         n_plot = int(frac*self.number_test)

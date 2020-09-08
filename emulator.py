@@ -11,6 +11,8 @@ import os
 from collections import defaultdict
 import sklearn
 import pickle
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
 from sklearn.neural_network import MLPRegressor
 from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
@@ -102,6 +104,10 @@ class emulator:
             train_func = self.train_random_forest_regressor
         if regressor_name == "ANN":
             train_func = self.train_ann_regressor
+        if regressor_name == "SVM":
+            train_func = self.train_svm_regressor
+        if regressor_name == "DTree":
+            train_func = self.train_decision_tree_regressor
 
         for j in range(self.n_values):
             ys_train_r = self.ys_train[:,j]
@@ -139,6 +145,13 @@ class emulator:
                        ).fit(x, y)
         return model
 
+    def train_svm_regressor(self, x, y, kwargs= {'kernel':'rbf', 'epsilon':5e-4, 'C':11, 'gamma':0.09,'tol':1e-6}):
+        model = SVR(**kwargs).fit(x, y)
+        return model
+
+    def train_decision_tree_regressor(self, x, y, scale=False):
+        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
+        return model
 
     def train_random_forest_regressor(self, x, y, scale = False):
         if scale:

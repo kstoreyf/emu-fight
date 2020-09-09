@@ -12,9 +12,9 @@ Are you interested in comparing your machine learning method? Or adding a new da
 
 Here, you have some instructions for you on how to add a new machine learning method.
 
-1) Add your method in the emulator.py file. Go the function train in the emulator class. Add a keyword and a training fucntion name as the example below.
+1) Add your method in the emulator.py file. Go the function train in the emulator class. As the example below, add a keyword for the regressor_name variable and the function .
 >     def train(self, regressor_name, scale=True, **kwargs):
-        if regressor_name == "RF":
+>        if regressor_name == "RF":
             train_func = self.train_random_forest_regressor
 
 

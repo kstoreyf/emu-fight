@@ -17,10 +17,10 @@ Here, you have some instructions for you on how to add a new machine learning me
 >        if regressor_name == "RF":
 >            train_func = self.train_random_forest_regressor
 
-2) **Adding the training function.** Write a function with the training model.
+2) **Adding the training function.** Write a function with the training model. For example:
 >     def train_decision_tree_regressor(self, x, y, scale=False):
 >        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
 >        return model
 
-3) In the the_final_emu_fight.ipynb add a section with your code.
+3) **Request a pull request**. With your changes request a pull request on the master branch. Let us know more about your method adding a small description of your method.
 

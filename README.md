@@ -13,7 +13,7 @@ In the ***[the_great_emu_fight.ipynb](https://github.com/kstoreyf/emu-fight/blob
 ### Contributing
 Are you interested in pit your emus against ours? Or adding a new dataset to emulate? Feel free to submit a pull request! 
 
-Here, you have some instructions for you on how to add a new machine learning method.
+Here, we have some instructions for you on how to add a new machine learning method.
 
 1) **Adding your method in the emulator.py file**. Go the function ***train*** in the emulator class. As the example below, add a keyword for the regressor_name variable and a function for your traning method.
 >     def train(self, regressor_name, scale=True, **kwargs):

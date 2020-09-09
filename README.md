@@ -12,11 +12,13 @@ Are you interested in comparing your machine learning method? Or adding a new da
 
 Here, you have some instructions for you on how to add a new machine learning method.
 
-1) Add your method in the emulator.py file. Go the function train in the emulator class. As the example below, add a keyword for the regressor_name variable and the function .
+1) **Adding your method in the emulator.py file**. Go the function train in the emulator class. As the example below, add a keyword for the regressor_name variable and a function for your traning method.
 >     def train(self, regressor_name, scale=True, **kwargs):
 >        if regressor_name == "RF":
-            train_func = self.train_random_forest_regressor
+>            train_func = self.train_random_forest_regressor
 
-
-2) Add a train function
+2) **Adding the training function**
+>
+>
+>
 3) In the the_final_emu_fight.ipynb add a section with your code.

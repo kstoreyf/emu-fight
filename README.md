@@ -17,8 +17,8 @@ Here, we have some instructions for you on how to add a new machine learning met
 
 1) **Adding your method in the emulator.py file**. Go the function ***train*** in the emulator class. As the example below, add a keyword for the regressor_name variable and a function for your traning method.
 >     def train(self, regressor_name, scale=True, **kwargs):
->        if regressor_name == "RF":
->            train_func = self.train_random_forest_regressor
+>        if regressor_name == "DTree":
+>            train_func = self.train_decision_tree_regressor
 
 2) **Adding the training function.** Write a function with the training model. For example:
 >     def train_decision_tree_regressor(self, x, y, scale=False):

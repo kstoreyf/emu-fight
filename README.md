@@ -25,7 +25,7 @@ Here, we have some instructions for you on how to add a new machine learning met
 >        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
 >        return model
 
-4) ***Puting your emu to fight***. Follow the template in the ***[the_great_emu_fight.ipynb](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb)*** and run your code!
+4) **Puting your emu to fight**. Follow the template in the ***[the_great_emu_fight.ipynb](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb)*** and run your code!
 
 5) **Request a pull request**. With your changes request a pull request on the master branch. Let us know more about your method adding a small description about your method.
 

@@ -18,7 +18,7 @@ Here, you have some instructions for you on how to add a new machine learning me
 >            train_func = self.train_random_forest_regressor
 
 2) **Adding the training function.** Write a function with the training model.
->    def train_decision_tree_regressor(self, x, y, scale=False)
+>     def train_decision_tree_regressor(self, x, y, scale=False):
 >        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
 >        return model
 

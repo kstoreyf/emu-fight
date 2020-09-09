@@ -8,7 +8,7 @@ In order to produce this approximation, the emulator must be trained on previous
 This project comprised of a pedagogical tool to compare different emulation methods; may the best emu win!
 
 ### The Great Emu Fight
-In the notebook ***the_great_emu_fight.ipynb*** we'll teach you what an emulator is, and show you how to build emulators with various methods and frameworks. We will then pit our emus against each other and see which emu wins!
+In the notebook ***the_great_emu_fight.ipynb(https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb)*** we'll teach you what an emulator is, and show you how to build emulators with various methods and frameworks. We will then pit our emus against each other and see which emu wins!
 
 ### Contributing
 Are you interested in comparing your machine learning method? Or adding a new dataset to emulate? Feel free to submit a pull request! 

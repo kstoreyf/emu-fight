@@ -10,11 +10,12 @@ This project comprised of a pedagogical tool to compare different emulation meth
 ### Contributing
 Are you interested in comparing your machine learning method? Or adding a new dataset to emulate? Feel free to submit a pull request! 
 
-Here,you have some instructions for how to add a new machine learning method.
+Here, you have some instructions for you on how to add a new machine learning method.
 
-Steps
-1) Add your method in the emulator.py file. Go the function train in the emulator class and add
+1) Add your method in the emulator.py file. Go the function train in the emulator class. Add a keyword and a training fucntion name as the example below.
 >     def train(self, regressor_name, scale=True, **kwargs):
+        if regressor_name == "RF":
+            train_func = self.train_random_forest_regressor
 
 
 2) Add a train function

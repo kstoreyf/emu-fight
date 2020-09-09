@@ -22,5 +22,5 @@ Here, you have some instructions for you on how to add a new machine learning me
 >        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
 >        return model
 
-3) **Request a pull request**. With your changes request a pull request on the master branch. Let us know more about your method adding a small description of your method.
+3) **Request a pull request**. With your changes request a pull request on the master branch. Let us know more about your method adding a small description about your method.
 

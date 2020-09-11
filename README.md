@@ -3,7 +3,7 @@
 [![Made at #AstroHackWeek](https://img.shields.io/badge/Made%20at-%23AstroHackWeek-8063d5.svg?style=flat)](http://astrohackweek.org/)
 
 Emulators, or emus for short, are models that mimic the output of more complex models or simulations; like the giant Australian birds, these emus are fast, powerful, and [ready for a fight](https://www.youtube.com/watch?v=d9OBqYbZ99c).
-In the [`**the_great_emu_fight.ipynb**`](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb) we'll teach you what an emulator is, and show you how to build emulators with various methods and frameworks. We will then pit our emus against each other; may the best emu win!
+In the [`the_great_emu_fight.ipynb`](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb) we'll teach you what an emulator is, and show you how to build emulators with various methods and frameworks. We will then pit our emus against each other; may the best emu win!
 
 ### Emulation
 
@@ -14,7 +14,7 @@ This is particularly useful in inference problems to more fully explore the para
 
 Emulators have found widespread use in astronomy. See the papers below for some examples from different areas!
 
-- [Schmit & Pritchard 2017](https://arxiv.org/abs/1708.00011) "Emulation of reionization simulations for Bayesian inference of astrophysics parameters using neural networks" 
+- [Schmit & Pritchard 2017](https://arxiv.org/abs/1708.00011), "Emulation of reionization simulations for Bayesian inference of astrophysics parameters using neural networks" 
 - [McClintock et al. 2018](https://arxiv.org/abs/1804.05866), "The Aemulus Project II: Emulating the Halo Mass Function"
 - [Mijolla et al. 2019](https://arxiv.org/abs/1907.07472), "Incorporating astrochemistry into molecular line modelling via emulation"
 - [Rogers et al. 2019](https://arxiv.org/abs/1812.04631), "Bayesian emulator optimisation for cosmology: application to the Lyman-alpha forest"

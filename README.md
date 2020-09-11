@@ -24,20 +24,35 @@ Emulators have found widespread use in astronomy. See the papers below for some 
 
 
 ### Contributing
-Are you interested in pit your emus against ours? Or adding a new dataset to emulate? Feel free to submit a pull request! 
 
-Here, we have some instructions for you on how to add a new machine learning method.
+Are you interested in piting your emulator against ours? Or adding a new dataset to emulate? Feel free to submit a pull request!
 
-1) **Adding your method in the emulator.py file**. Go the function ***train*** in the emulator class. As the example below, add a keyword for the regressor_name variable and a function for your traning method.
+Here are instructions on how to contribute a new emulator:
+
+1) **Fork the repo and checkout a new branch.** Follow [these instructions](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) to make your own fork, and start a new branch for your changes.
+
+2) **Write a standalone notebook tutorial.** Follow the template at [template_method_stand_alone.ipynb](https://github.com/kstoreyf/emu-fight/blob/master/emulator_examples/template_method_stand_alone.ipynb) to construct your emulator and try it out on our training and test datasets. Include a short description of the method.
+
+3) **Add your method in the emulator.py file.** Go the function ***train*** in the emulator class. As the example below, add a keyword for the `regressor_name` variable and a function for your training method.
 >     def train(self, regressor_name, scale=True, **kwargs):
 >        if regressor_name == "DTree":
 >            train_func = self.train_decision_tree_regressor
 
-2) **Adding the training function.** Write a function with the training model. For example:
+4) **Add the training function.** Write a function that takes the inputs `x` and outputs `y`, and returns the training model (which is assumed to have a `predict` method). For example:
 >     def train_decision_tree_regressor(self, x, y, scale=False):
 >        model = DecisionTreeRegressor(random_state=0, criterion="mae").fit(x, y)
 >        return model
 
-4) **Puting your emu to fight**. Follow the template in the ***[the_great_emu_fight.ipynb](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb)*** and run your code!
+5) **Throw your emu into the fighting ring.** Add your emulatior into ***[the_great_emu_fight.ipynb](https://github.com/kstoreyf/emu-fight/blob/master/the_great_emu_fight.ipynb)***, following the format of the other emulators in section 2.C. Then run your code and compare the results to the other emus in section 3.
 
-5) **Request a pull request**. With your changes request a pull request on the master branch. Let us know more about your method adding a small description about your method.
+6) **Submit a pull request.** Continue following [these instructions](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) to submit a pull request.  Happy fighting! 
+
+
+### Authors
+
+This project was initiated at [AstroHackWeek 2020](http://astrohackweek.org/2020/), by the `emu-fight` team:
+- [Kate Storey-Fisher](https://github.com/kstoreyf) (New York University)
+- [Catarina Alves](https://github.com/Catarina-Alves) (University College London)
+- [Johannes Heyl](https://github.com/Bamash) (University College London)
+- [Yssa Camacho-Neves](https://github.com/ycamacho) (Rutgers University)
+- [Johnny Esteves](https://github.com/estevesjh) (University of Michigan)

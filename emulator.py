@@ -40,6 +40,7 @@ class emulator:
         self.number_of_samples = []
         self.val_loss = []
         self.models = defaultdict(dict)
+        self.regressors_implemented = ["ANN", "RF", "DTree", "SVM"]
 
     def read_data(self, training_file, test_file, scale=False,
                   normalize_y=False):
@@ -112,11 +113,18 @@ class emulator:
             model = train_func(x=self.xs_train, y=ys_train_r.ravel(), **kwargs)
             self.models[regressor_name]['regressors'][j] = model
 
+    def test_all(self, metric):
+        regressor_names = self.models.keys()
+        for rn in regressor_names:
+            self.test(rn, metric)
+
     def test(self, regressor_name, metric):
         error_message = f"{regressor_name} not yet trained!"
         assert regressor_name in self.models, error_message
         metric_funcs = {"r2": sklearn.metrics.r2_score,
-                        "mse": sklearn.metrics.mean_squared_error}
+                        "mse": sklearn.metrics.mean_squared_error,
+                        "fracerr_stdev": self.fractional_error_stdev,
+                        "fracerr_percentile": self.fractional_error_percentile}
         error_message = ('{} not recognized! options are: {}'
                          ''.format(metric, metric_funcs.keys()))
         assert metric in metric_funcs, error_message
@@ -126,6 +134,18 @@ class emulator:
             scores[j] = metric_funcs[metric](self.ys_test_orig[:, j],
                                              ys_predict[:, j])
         self.models[regressor_name][metric] = scores
+
+    def fractional_error_stdev(self, tests, predicts):
+        fracerrs = (predicts-tests)/tests
+        score = np.std(fracerrs)
+        return score
+
+    def fractional_error_percentile(self, tests, predicts):
+        fracerrs = (predicts-tests)/tests
+        p16 = np.percentile(fracerrs, 16)
+        p84 = np.percentile(fracerrs, 84)
+        score = 0.5*(abs(p16)+abs(p84))
+        return score
 
     # assumes model has a predict method that takes x values
     def predict_test_set(self, regressor_name):
@@ -216,17 +236,22 @@ class emulator:
         plt.xlabel('$r$')
         plt.ylabel(r'$\xi(r)$')
 
-    def plot_accuracy(self, metric, regressor_names=None):
+    def plot_accuracy(self, metric, regressor_names=None, colors=None):
         if regressor_names is None:
             regressor_names = self.models.keys()
         plt.figure()
-        for rn in regressor_names:
+        for i, rn in enumerate(regressor_names):
             error_message = ('must first run emu.test(regressor_name, metric) '
                              'for regressor_name {} and metric {}!'
                              ''.format(rn, metric))
             assert metric in self.models[rn].keys(), error_message
             scores = self.models[rn][metric]
-            plt.plot(self.r_vals, scores, label=rn)
+            if colors is not None:
+                color = colors[i]
+            else:
+                color = None
+            plt.plot(self.r_vals, scores, marker='o', color=color,
+                     label=rn)
         plt.xlabel('$r$')
         plt.ylabel(metric)
         plt.legend()

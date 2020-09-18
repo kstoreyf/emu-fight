@@ -57,4 +57,4 @@ This project was initiated at [AstroHackWeek 2020](http://astrohackweek.org/2020
 - [**Yssa Camacho-Neves**](https://github.com/ycamacho) (Rutgers University)
 - [**Johnny Esteves**](https://github.com/estevesjh) (University of Michigan)
 
-![authors_fighting](images/authors_fighting.png)
+![authors_fighting](images/authors_fighting.png =250x)
